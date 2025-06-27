@@ -1,0 +1,16 @@
+/* src/components/Navbar.css */
+
+.navbar .nav-item {
+  margin: 0.25rem 0;
+}
+
+@media (min-width: 992px) {
+  .navbar-nav {
+    flex-direction: row !important;
+    gap: 1rem;
+  }
+
+  .navbar .nav-item button {
+    width: auto !important;
+  }
+}
