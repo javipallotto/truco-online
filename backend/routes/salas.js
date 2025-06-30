@@ -75,4 +75,16 @@ router.post('/unirse-privada', authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/activas', authMiddleware, async (req, res) => {
+  try {
+    const salas = await Sala.find({ activa: true })
+      .populate('jugadores', 'username')
+      .sort({ createdAt: -1 });
+
+    res.json({ salas });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener salas activas' });
+  }
+});
+
 module.exports = router;

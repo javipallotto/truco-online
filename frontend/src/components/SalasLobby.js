@@ -1,50 +1,54 @@
+// frontend/src/components/SalasLobby.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function SalasLobby() {
   const [salas, setSalas] = useState([]);
-  const [codigo, setCodigo] = useState('');
   const [msg, setMsg] = useState('');
-
-  const userId = localStorage.getItem('userId');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/salas/abiertas')
-      .then(res => setSalas(res.data))
-      .catch(err => setMsg('Error al cargar salas'));
+    const token = localStorage.getItem('token');
+    axios.get('http://localhost:5000/api/salas/activas', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => setSalas(res.data.salas))
+      .catch(err => setMsg('Error al cargar salas activas'));
   }, []);
 
-  const unirseASala = (salaId) => {
-    axios.post('http://localhost:5000/api/salas/unirse', { salaId, userId })
-      .then(res => setMsg('Unido a sala'))
-      .catch(err => setMsg(err.response?.data?.error || 'Error al unirse a sala'));
-  };
-
-  const unirsePorCodigo = () => {
-    if (!codigo) return setMsg('Ingresá un código');
-    axios.post('http://localhost:5000/api/salas/unirse', { codigo, userId })
-      .then(res => setMsg('Unido a sala privada'))
-      .catch(err => setMsg(err.response?.data?.error || 'Error al unirse a sala privada'));
+  const unirseASala = async (salaId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post('http://localhost:5000/api/salas/unirse-publica', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      navigate(`/sala/${res.data.sala._id}`);
+    } catch (err) {
+      setMsg('Error al unirse a la sala');
+    }
   };
 
   return (
     <div className="container mt-4">
-      <h2>Salas abiertas</h2>
-      {salas.length === 0 && <p>No hay salas abiertas</p>}
-      {salas.map(sala => (
-        <div key={sala._id} className="card mb-2 p-2">
-          <strong>{sala.nombre}</strong>
-          <p>Jugadores: {sala.jugadores.length}/{sala.maxJugadores}</p>
-          <button className="btn btn-primary" onClick={() => unirseASala(sala._id)}>Unirse</button>
-        </div>
-      ))}
-
-      <hr />
-      <h4>Ingresar a sala privada</h4>
-      <input className="form-control mb-2" value={codigo} onChange={e => setCodigo(e.target.value)} placeholder="Código de sala" />
-      <button className="btn btn-secondary" onClick={unirsePorCodigo}>Ingresar</button>
-
-      {msg && <div className="mt-3 alert alert-info">{msg}</div>}
+      <h2>Lobby de Salas Activas</h2>
+      {msg && <div className="alert alert-danger">{msg}</div>}
+      <div className="row">
+        {salas.map(sala => (
+          <div className="col-md-4 mb-3" key={sala._id}>
+            <div className="card p-3">
+              <h5>Tipo: {sala.tipo}</h5>
+              <p><strong>Jugadores:</strong> {sala.jugadores.map(j => j.username).join(', ')}</p>
+              {sala.tipo === 'privada' && sala.codigo && (
+                <p><strong>Código:</strong> {sala.codigo}</p>
+              )}
+              <button className="btn btn-primary w-100" onClick={() => unirseASala(sala._id)}>
+                Unirse
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

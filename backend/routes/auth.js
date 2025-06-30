@@ -22,11 +22,12 @@ router.post('/register', async (req, res) => {
     });
 
     await nuevoUsuario.save();
-    res.json({
-  message: 'Login exitoso',
-  token,
-  username: user.username,
-  saldo: user.saldo
+    res.json({ message: 'Usuario registrado correctamente' });
+
+  } catch (err) {
+    console.error('Error al registrar usuario:', err);
+    res.status(500).json({ error: 'Error al registrar' });
+  }
 });
 
 // Login
