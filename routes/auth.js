@@ -40,15 +40,18 @@ router.post('/login', async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).json({ error: 'Contraseña incorrecta' });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // ✅ Incluir username en el payload del token
+    const token = jwt.sign(
+      { id: user._id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
     res.json({
       message: 'Login exitoso',
       token,
-      user: {
-        username: user.username,
-        saldo: user.saldo
-      }
+      username: user.username,
+      saldo: user.saldo
     });
   } catch (err) {
     console.error('Error en login:', err);

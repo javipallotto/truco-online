@@ -1,13 +1,12 @@
 const mongoose = require('mongoose');
 
-const salaSchema = new mongoose.Schema({
-  nombre: String,
-  tipo: { type: String, enum: ['abierta', 'privada'], default: 'abierta' },
-  codigo: String,
-  jugadores: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' }],
+const SalaSchema = new mongoose.Schema({
+  codigo: { type: String, required: true, unique: true },
+  tipo: { type: String, enum: ['privada', 'abierta'], default: 'privada' },
   maxJugadores: { type: Number, default: 2 },
-  creadaPor: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
+  jugadores: [{ type: String }], // ← ahora solo strings, no ObjectId
+  creadaPor: { type: String },   // ← también nombre de usuario
   activa: { type: Boolean, default: true },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Sala', salaSchema);
+module.exports = mongoose.model('Sala', SalaSchema);
